@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
+<title></title>
+<script src="https://d3js.org/d3.v7.min.js">
+
+
+</script>
+<style>
+h1 {
+text-align: center;
+
+}
+#my_dataviz {
+  margin: auto;
+  width: 50%;
+  border: 3px solid green;
+  padding: 10px;
+}
+img {
+padding-right: 400px;
+padding-top: 200px;
+
+}
+</style>
+</head>
+<body>
+<div>
+  <h1>Employment Data<h1>
+  
+<img align="right" src="Legend.png">
+
+</div>
+<br>
+<div id="my_dataviz">
+
+</div>
+
+</body>
+<script type="text/javascript">
+var employmentRate = [{'year': '2018', 'female_unemployed': 30, 'female_employed': 800, 'male_unemployed': 45, 'male_employed': 900},
+{'year': '2019', 'female_unemployed': 35, 'female_employed': 805, 'male_unemployed': 40, 'male_employed': 895},
+{'year': '2020', 'female_unemployed': 60, 'female_employed': 700, 'male_unemployed': 75, 'male_employed': 850}]
+
+
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 20, left: 50},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var year = employmentRate.map(function(d) {
+return d.year})
+
+var employmentType = Object.keys(employmentRate[0])
+    .filter(function(key) {return key !== 'year'})
+    
+var x = d3.scaleBand()
+      .domain(year)
+      .range([0, width])
+      .padding([0.2])
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).tickSizeOuter(0))
+    
+var y = d3.scaleLinear()
+    .domain([0, 1775])
+    .range([ height, 0 ]);
+  svg.append("g")
+    .call(d3.axisLeft(y))
+    
+var color = d3.scaleOrdinal()
+    .domain(employmentType)
+    .range(['#e41a1c','#377eb8','#4daf4a', '#a03cae'])
+    
+
+var stackedData = d3.stack()
+    .keys(employmentType)
+    (employmentRate)
+    
+svg.append("g")
+    .selectAll("g")
+    // Enter in the stack data = loop key per key = group per group
+    .data(stackedData)
+    .enter().append("g")
+      .attr("fill", function(d) { return color(d.key); })
+      .selectAll("rect")
+      // enter a second time = loop subgroup per subgroup to add all rectangles
+      .data(function(d) { return d; })
+      .enter().append("rect")
+        .attr("x", function(d) { return x(d.data.year); })
+        .attr("y", function(d) { return y(d[1]); })
+        .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+        .attr("width",x.bandwidth())
+
+</script>
+</html>
